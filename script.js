@@ -4,10 +4,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const taskInput = document.getElementById('task-input');
     const taskList = document.getElementById('task-list');
 
-    function addTask() {
-    const taskText = taskInput.value.trim();
+    function loadTasks() {
+        const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        storedTasks.forEach(taskText => addTask(taskText, false));
+    }
 
-    if (taskText === "") {
+    function addTask(taskText, save = true) {
+
+    if (taskText.trim() === "") {
         alert('Enter a new task');
         return;
     } 
@@ -17,10 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
-    removeButton.classList.add = 'remove-btn';
+    removeButton.classList.add('remove-btn');
 
     removeButton.onclick = function() {
         taskList.removeChild(li);
+        updateLocalStorage();
     };
 
     li.appendChild(removeButton);
@@ -28,14 +33,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     taskInput.value = "";
 
+    if (save) {
+        const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        storedTasks.push(taskText);
+        localStorage.setItem('tasks', JSON.stringify(storedTasks));
     }
 
-    addButton.addEventListener('click', addTask);
+    }
+
+    function updateLocalStorage() {
+        const tasks = Array.from(taskList.children).map(li => li.firstChild.textContent);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    addButton.addEventListener('click', function(){
+        const taskText = taskInput.value.trim();
+        addTask(taskText);
+    });
+
     taskInput.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
-            addTask();
+            const taskText = taskInput.value.trim();
+            addTask(taskText);
         }
     });
 
-    addTask();
+    loadTasks();
 });
